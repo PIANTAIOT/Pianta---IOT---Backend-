@@ -1,0 +1,13 @@
+<!--
+Actualizado por:
+Yeimmy Katherin Lugo 
+07/06/2023 --> 
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <!-- El formulario se envía utilizando el método "post" para enviar los datos al servidor -->
+    <!-- Se incluye un token CSRF para proteger contra ataques de falsificación de solicitudes entre sitios -->
+    <!-- El formulario se renderiza utilizando el método "as_p" para mostrar cada campo del formulario en un párrafo separado -->
+    <button type="submit">Guardar cambios</button>
+</form>
