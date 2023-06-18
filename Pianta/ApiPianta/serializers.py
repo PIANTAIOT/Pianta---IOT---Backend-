@@ -42,15 +42,12 @@ class NewRegisterSerializer(serializers.Serializer):
     # Campo de serializador que representa el nombre de usuario del usuario a registrar
     # La longitud máxima del campo se obtiene del modelo de usuario configurado en Django
     username = serializers.CharField(max_length=UserModel._meta.get_field('username').max_length, required=False)
-    
     # Campo de serializador que representa la dirección de correo electrónico del usuario a registrar
     email = serializers.EmailField(required=False)
-
     # Campo de serializador que representa la contraseña del usuario a registrar
     # `write_only=False` indica que el campo también se puede leer, no solo escribir
     # `required=False` indica que el campo no es obligatorio y se puede omitir en la solicitud
     password = serializers.CharField(write_only=False, required=False)
-
     def create(self, validated_data):
         with transaction.atomic():  # Inicia una transacción de base de datos para asegurar la atomicidad de la creación de usuario y token
             user = UserModel.objects.create_user(

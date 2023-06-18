@@ -129,7 +129,9 @@ class GraphicsSerializer(serializers.ModelSerializer):
             "id",  # Campo de identificación del gráfico
             "titlegraphics",  # Campo de título del gráfico
             "namegraphics",  # Campo de nombre del gráfico
-            "aliasgraphics",  # Campo de alias del gráfico
+            "aliasgraphics", #Campo de alias del gráfico
+            "location",#
+            "is_circular",
             "relationUserGraphics",  # Campo de relación con el usuario propietario del gráfico
         ]
         # Define los campos que se serializarán/deserializarán y se incluirán en la representación del objeto
@@ -145,17 +147,3 @@ class GraphicsSerializer(serializers.ModelSerializer):
         graphicsx = graphics.objects.create(**validated_data)
         return graphicsx
     
-    def validate(self, data):
-            # Verificar si el campo "titlegraphics" está presente en los datos
-        if 'titlegraphics' in data:
-            # Verificar si el valor del campo es nulo o está en blanco
-            if data['titlegraphics'] is None or data['titlegraphics'] == '':
-                # Eliminar el campo "titlegraphics" si está vacío
-                del data['titlegraphics']
-        # Verificar si el campo "aliasgraphics" está presente en los datos
-        if 'aliasgraphics' in data:
-            # Verificar si el valor del campo es nulo o está en blanco
-            if data['aliasgraphics'] is None or data['aliasgraphics'] == '':
-                # Eliminar el campo "aliasgraphics" si está vacío
-                del data['aliasgraphics']
-        return data

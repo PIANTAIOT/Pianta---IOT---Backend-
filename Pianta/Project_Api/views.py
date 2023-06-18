@@ -629,6 +629,8 @@ class GraphicsApiView(APIView):
             'titlegraphics': request.data.get('titlegraphics'),
             'namegraphics': request.data.get('namegraphics'),
             'aliasgraphics': request.data.get('aliasgraphics'),
+            'location': request.data.get('location'),
+            'is_circular': request.data.get('is_circular', False),
         }
         # Crear un serializador con los datos de la solicitud y el contexto de la solicitud
         serializer = GraphicsSerializer(data=request.data, context={'request': request})
@@ -678,6 +680,8 @@ class GraphicsApiDetailView(APIView):
             'titlegraphics': request.data.get('titlegraphics'),
             'namegraphics': request.data.get('namegraphics'),
             'aliasgraphics': request.data.get('aliasgraphics'),
+            'location': request.data.get('location'),
+            'is_circular': request.data.get('is_circular', False),
         }
         
         # Crear una instancia del serializador de gráficos con la instancia existente y los datos proporcionados
@@ -716,5 +720,3 @@ class GraphicsApiDetailView(APIView):
             {"res": "Object deleted!"},
             status=status.HTTP_200_OK
         )
-
-    
