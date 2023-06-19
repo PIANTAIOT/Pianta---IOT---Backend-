@@ -596,6 +596,7 @@ class GraphicsApiView(APIView):
             'namegraphics': request.data.get('namegraphics'),
             'aliasgraphics': request.data.get('aliasgraphics'),
             'location': request.data.get('location'),
+            'color': request.data.get('color'),
             'is_circular': request.data.get('is_circular', False),
             'relationTemplateGraphics_id': template_id,  # Agregar el ID de la plantilla al diccionario de datos
         }
@@ -648,6 +649,7 @@ class GraphicsApiDetailView(APIView):
             'titlegraphics': request.data.get('titlegraphics', graphics_instance.titlegraphics),
             'namegraphics': request.data.get('namegraphics', graphics_instance.namegraphics),
             'aliasgraphics': request.data.get('aliasgraphics', graphics_instance.aliasgraphics),
+            'color': request.data.get('color', graphics_instance.color),
         }
         
         # Crear una instancia del serializador de gráficos con la instancia existente y los datos proporcionados
