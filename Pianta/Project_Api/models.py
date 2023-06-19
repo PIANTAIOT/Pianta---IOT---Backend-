@@ -34,7 +34,7 @@ class SharedProject(models.Model):
 class Devices(models.Model):
     id = models.AutoField(primary_key=True)  # Define un campo AutoField llamado 'id' como clave primaria
     name = models.CharField(max_length=30, blank=False, null=False)  # Define un campo CharField llamado 'name' con una longitud máxima de 30 caracteres y no permite valores en blanco ni nulos
-    location = models.CharField(max_length=100, blank=False, null=False)  # Define un campo CharField llamado 'location' con una longitud máxima de 100 caracteres y no permite valores en blanco ni nulos
+    location = models.CharField(max_length=1000, blank=False, null=False)  # Define un campo CharField llamado 'location' con una longitud máxima de 100 caracteres y no permite valores en blanco ni nulos
     relationProject = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='devices', default=None)
     
 # Define la clase Template que hereda de models.Model
