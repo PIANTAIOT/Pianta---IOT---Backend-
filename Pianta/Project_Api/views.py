@@ -1,6 +1,6 @@
 # Actualizado por:
-# Yeimmy Katherin Lugo 
-# 07/06/2023
+# Juan Sebastian Girardot Antonio
+# 06/18/2023
 
 from django.shortcuts import render
 from django.shortcuts import render
@@ -24,7 +24,8 @@ from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from rest_framework.exceptions import PermissionDenied
 from django.views.generic.base import View
-
+from django.core.exceptions import ObjectDoesNotExist
+from rest_framework.exceptions import ValidationError
 
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer, TemplateHTMLRenderer
@@ -299,117 +300,76 @@ class ProjectDetailApiView(APIView):
         )   
 
 
-class DevicesListApiView(APIView):
-    permission_classes = (IsAuthenticated, ) # Clases de permisos requeridas para acceder a esta vista
-    queryset = Devices.objects.all() # Todos los objetos de Devices en la base de datos
-    serializer_class = DevicesSerializer # Clase serializadora utilizada para convertir los objetos en datos JSON
+class DevicesListApiView(generics.ListCreateAPIView):
+    queryset = Devices.objects.all()
+    serializer_class = DevicesSerializer
 
     def get_queryset(self):
-        return Devices.objects.filter(relationUserDevice=self.request.user)# Obtiene todos los dispositivos relacionados con el usuario actual
+        project_id = self.kwargs['project_id']
+        return Devices.objects.filter(relationProject_id=project_id)
 
     def perform_create(self, serializer):
-        serializer.save(relationUserDevice=self.request.user)# Guarda el dispositivo relacionado con el usuario actual
+        project_id = self.kwargs['project_id']
+        try:
+            project = Project.objects.get(id=project_id)
+        except ObjectDoesNotExist:
+            raise ValidationError("Project with the provided ID does not exist.")
+        serializer.save(relationProject=project)
 
-    def get(self, request, *args, **kwargs):
-        '''
-        List all the project items for given requested user
-        '''
-        devices = Devices.objects.filter(relationUserDevice=request.user)# Obtiene todos los dispositivos relacionados con el usuario actual
-        serializer = DevicesSerializer(devices, many=True)# Serializa los dispositivos en formato JSON
-        return Response(serializer.data, status=status.HTTP_200_OK)# Devuelve una respuesta con los dispositivos serializados y el estado HTTP 200 OK
-
-     #Lista todos los registros
-
-    
-    #Crea un nuevo registro
-    def post(self, request, *args, **kwags):
-        '''
-        Create the Project wint given project data
-        '''
+    def post(self, request, *args, **kwargs):
+        project_id = self.kwargs['project_id']
         data = {
-            'id' : request.data.get('id'),# Obtiene el valor de 'id' del objeto 'request.data'
-            'name' : request.data.get('name'),  # Obtiene el valor de 'name' del objeto 'request.data'
-            'location': request.data.get('location'), # Obtiene el valor de 'location' del objeto 'request.data'
+            'name': request.data.get('name'),
+            'location': request.data.get('location'),
+            'relationProject': project_id,
         }
-        serializer = DevicesSerializer(data=data, context={'request': request}) # Crea una instancia del serializador 'DevicesSerializer' con los datos proporcionados y el contexto de la solicitud
-        if serializer.is_valid(): # Verifica si los datos proporcionados son válidos
-            serializer.save()# Guarda los datos en la base de datos
-            return Response(serializer.data, status=status.HTTP_201_CREATED)# Devuelve una respuesta con los datos serializados y el estado HTTP 201 CREATED
-        
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) # Devuelve una respuesta con los errores de validación y el estado HTTP 400 BAD REQUEST si los datos no son válidos
+        serializer = DevicesSerializer(data=data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 class DevicesDetailApiView(APIView):
     #Método auxiliar para obtener el objecto con project_id dado
-    def get_objects(self, device_id):
-        try:
-            return Devices.objects.get(id=device_id, relationUserDevice=self.request.user)  # Obtiene un objeto Devices con el ID y la relaciónUserDevice específicos
+    def get_object(self, device_id):
+        try:   # Obtener el ID del proyecto desde los argumentos de la URL
+            project_id = self.kwargs['project_id']
+            project = Project.objects.get(id=project_id)
+            print(project)
+            return Devices.objects.get(id=device_id, relationProject_id=project_id)  # Obtiene un objeto Devices con el ID y la relaciónUserDevice específicos
         except Devices.DoesNotExist:
             return None   # Si no se encuentra el objeto, devuelve None (ningún objeto encontrado)
 
     #Recupera el elemento Project con project_id dado
     def get(self, request, device_id, *args, **kwargs):
-        device_instance = self.get_objects(device_id)   # Obtiene la instancia del dispositivo con el device_id proporcionado
-
+        device_instance = self.get_object(device_id)
         if not device_instance:
-            return Response(
-            {"res": "Object with device id does not exist"},   # Devuelve una respuesta indicando que el objeto con el device_id no existe
-            status=status.HTTP_400_BAD_REQUEST                  # Estado HTTP 400 BAD REQUEST
-            )
-
-        serializer = DevicesSerializer(device_instance)   # Serializa la instancia del dispositivo
-        return Response(serializer.data, status=status.HTTP_200_OK)   # Devuelve una respuesta con los datos serializados del dispositivo y el estado HTTP 200 OK
-
+            return Response({"res": "Object with device id does not exist"}, status=status.HTTP_400_BAD_REQUEST)
+        serializer = DevicesSerializer(device_instance)
+        return Response(serializer.data, status=status.HTTP_200_OK)
     #Actualiza el elemento Project con project_id dado, si existe
      # Obtener la instancia del dispositivo basada en el ID proporcionado
-    def put(self, request,device_id, *args, **kwargs):
-        device_instance = self.get_objects(device_id)
-        # Comprobar si la instancia del dispositivo existe
+    def put(self, request, device_id, *args, **kwargs):
+        project_id = self.kwargs['project_id']
+        device_instance = self.get_object(device_id)
         if not device_instance:
-            return Response(
-                {"res": "Object with project id does not exists"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
-        # Preparar los datos para actualizar la instancia del dispositivo
-        data ={
-            #'id' : request.data.get('id'),
-            'name' : request.data.get('name'),
-            'description': request.data.get('location'),
+            return Response({"res": "Object with device id does not exist"}, status=status.HTTP_400_BAD_REQUEST)
+        data = {
+            'name': request.data.get('name'),
+            'location': request.data.get('location'),
+            'relationProject': project_id,
         }
-        # Crear una instancia del serializador de dispositivos con la instancia y los datos proporcionados
-        serializer = DevicesSerializer(
-            instance = device_instance,
-            data=data,
-            partial = True
-        )
-        # Crear una instancia del serializador de dispositivos con la instancia y los datos proporcionados
+        serializer = DevicesSerializer(instance=device_instance, data=data, partial=True)
         if serializer.is_valid():
-            # Guardar los datos actualizados en la instancia del dispositivo
             serializer.save()
-            # Devolver los datos serializados de la instancia del dispositivo actualizada
             return Response(serializer.data, status=status.HTTP_200_OK)
-        # Si los datos no son válidos, devolver los errores de validación
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    #Elimina el elemento Project con project_id dado, si existe
+
     def delete(self, request, device_id, *args, **kwargs):
-        # Obtener la instancia del dispositivo basada en el ID proporcionado
-        device_instance = self.get_objects(device_id)
-    
-        # Comprobar si la instancia del dispositivo existe
+        device_instance = self.get_object(device_id)
         if not device_instance:
-            return Response(
-                {"res": "Object with project id does not exist"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
-        # Eliminar la instancia del dispositivo de la base de datos
+            return Response({"res": "Object with device id does not exist"}, status=status.HTTP_400_BAD_REQUEST)
         device_instance.delete()
-        
-        # Devolver una respuesta exitosa indicando que el objeto fue eliminado
-        return Response(
-            {"res": "Object deleted!"},
-            status=status.HTTP_200_OK
-        )
+        return Response({"res": "Object deleted!"}, status=status.HTTP_200_OK)
    
 
 class TemplateListApiView(APIView):
@@ -599,31 +559,37 @@ def datos_sensores(request, field):
 
 #Graphics
 class GraphicsApiView(APIView):
-    permission_classes = (IsAuthenticated, )
+    #permission_classes = (IsAuthenticated, ) 
     queryset = graphics.objects.all()
     serializer_class = GraphicsSerializer
 
-    def get_queryset(self):
-        # Filtrar los gráficos pertenecientes al usuario que realiza la solicitud
-        return graphics.objects.filter(relationUserGraphics=self.request.user)
+    def get_queryset(self, **kwargs):
+        template_id = self.kwargs['id']
+        print(template_id)
+        return graphics.objects.filter(relationTemplateGraphics_id=template_id)
 
-    def perform_create(self, serializer):
-        # Guardar el usuario actual como propietario del gráfico al crearlo
-        serializer.save(relationUserGraphics=self.request.user)
+    def perform_create(self, serializer, **kwargs):
+        template_id = self.kwargs['id']
+        try:
+            template = Template.objects.get(id=template_id)
+        except ObjectDoesNotExist:
+            # Manejar el caso cuando no se encuentra ninguna instancia de Template
+            raise ValidationError("Template with the provided ID does not exist.")
+        serializer.save(relationTemplateGraphics=template)
 
     def get(self, request, *args, **kwargs):
-        '''
-        Devuelve todos los elementos de proyecto para el usuario solicitado.
-        '''
-        # Filtrar los gráficos pertenecientes al usuario que realiza la solicitud
-        graphicss = graphics.objects.filter(relationUserGraphics=request.user)
-        serializer = GraphicsSerializer(graphicss, many=True)
+        template_id = self.kwargs['id']
+        try:
+            template = Template.objects.get(id=template_id)
+        except ObjectDoesNotExist:
+            # Manejar el caso cuando no se encuentra ninguna instancia de Template
+            return Response("Template with the provided ID does not exist.", status=status.HTTP_404_NOT_FOUND)
+        graphics_queryset = self.get_queryset().filter(relationTemplateGraphics_id=template_id)
+        serializer = GraphicsSerializer(graphics_queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request, *args, **kwargs):
-        '''
-        Crea un nuevo proyecto con los datos proporcionados.
-        '''
+        template_id = self.kwargs['id']
         # Obtener los datos del cuerpo de la solicitud
         data = {
             'titlegraphics': request.data.get('titlegraphics'),
@@ -631,13 +597,15 @@ class GraphicsApiView(APIView):
             'aliasgraphics': request.data.get('aliasgraphics'),
             'location': request.data.get('location'),
             'is_circular': request.data.get('is_circular', False),
+            'relationTemplateGraphics_id': template_id,  # Agregar el ID de la plantilla al diccionario de datos
         }
         # Crear un serializador con los datos de la solicitud y el contexto de la solicitud
-        serializer = GraphicsSerializer(data=request.data, context={'request': request})
+        serializer = GraphicsSerializer(data=data, context={'request': request})
         serializer.is_valid(raise_exception=True)
-        # Llamar al método perform_create para guardar el gráfico y asignarle el usuario actual
+        # Llamar al método perform_create para guardar el gráfico y establecer la relación con la plantilla
         self.perform_create(serializer)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
 
 class GraphicsApiDetailView(APIView):
     def get_object(self, graphics_id):
@@ -677,11 +645,9 @@ class GraphicsApiDetailView(APIView):
         
         # Obtener los datos proporcionados en la solicitud
         data = {
-            'titlegraphics': request.data.get('titlegraphics'),
-            'namegraphics': request.data.get('namegraphics'),
-            'aliasgraphics': request.data.get('aliasgraphics'),
-            'location': request.data.get('location'),
-            'is_circular': request.data.get('is_circular', False),
+            'titlegraphics': request.data.get('titlegraphics', graphics_instance.titlegraphics),
+            'namegraphics': request.data.get('namegraphics', graphics_instance.namegraphics),
+            'aliasgraphics': request.data.get('aliasgraphics', graphics_instance.aliasgraphics),
         }
         
         # Crear una instancia del serializador de gráficos con la instancia existente y los datos proporcionados
@@ -699,7 +665,6 @@ class GraphicsApiDetailView(APIView):
         else:
             # Si los datos no son válidos, devolver los errores del serializador con un código de estado 400
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
     # Elimina el elemento Project con project_id dado, si existe
     def delete(self, request, graphics_id, *args, **kwargs):

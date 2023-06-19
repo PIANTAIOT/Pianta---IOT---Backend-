@@ -53,9 +53,8 @@ class ProjectSerializer(serializers.ModelSerializer):
         return project
 
 class DevicesSerializer(serializers.ModelSerializer):
-    relationUserDevice = serializers.ReadOnlyField(source='relationUserDevice.username')
-    # Define un campo de solo lectura "relationUserDevice" que obtiene el nombre de usuario del campo "relationUserDevice" del objeto relacionado
-
+    relationProject = serializers.PrimaryKeyRelatedField(queryset=Project.objects.all(), default=serializers.CurrentUserDefault())
+    # Utilizamos el campo PrimaryKeyRelatedField para obtener el ID del proyecto en lugar del nombre
     class Meta:
         model = Devices
         # Asocia el serializador al modelo "Devices"
@@ -63,20 +62,18 @@ class DevicesSerializer(serializers.ModelSerializer):
             "id",  # Campo de identificación del dispositivo
             "name",  # Campo de nombre del dispositivo
             "location",  # Campo de ubicación del dispositivo
-            "relationUserDevice",  # Campo de relación con el usuario propietario del dispositivo
+            "relationProject",  # Campo de relación con el usuario propietario del dispositivo
         ]
         read_only_fields = ['id']
         # Define los campos que serán de solo lectura en la deserialización (es decir, no se permitirá actualizarlos mediante la API)
 
     
     def create(self, validated_data):
-        # Obtenemos el usuario autenticado de la solicitud
-        user = self.context["request"].user
-        # Establecemos el valor de relationUserDevice en el usuario autenticado
-        validated_data["relationUserDevice"] = user
-        # Creamos el objeto relationUserDevice usando los datos validados actualizados
-        devices = Devices.objects.create(**validated_data)
-        return devices
+        project_id = self.context['request'].parser_context['kwargs']['project_id']
+        project = Project.objects.get(id=project_id)
+        validated_data.pop('relationProject')
+        device = Devices.objects.create(relationProject=project, **validated_data)
+        return device
     
     
 class TemplateSerializer(serializers.ModelSerializer):
@@ -119,31 +116,26 @@ class DatosSensoresSerializer(serializers.ModelSerializer):
 
 
 class GraphicsSerializer(serializers.ModelSerializer):
-    relationUserGraphics = serializers.ReadOnlyField(source='relationUserGraphics.username')
-    # Define un campo de solo lectura "relationUserGraphics" que obtiene el nombre de usuario del campo "relationUserGraphics" del objeto relacionado
+    relationTemplateGraphics = serializers.PrimaryKeyRelatedField(queryset=Template.objects.all(), default=serializers.CurrentUserDefault())
 
     class Meta:
         model = graphics
-        # Asocia el serializador al modelo "graphics"
         fields = [
-            "id",  # Campo de identificación del gráfico
-            "titlegraphics",  # Campo de título del gráfico
-            "namegraphics",  # Campo de nombre del gráfico
-            "aliasgraphics", #Campo de alias del gráfico
-            "location",#
+            "id",
+            "titlegraphics",
+            "namegraphics",
+            "aliasgraphics",
+            "location",
             "is_circular",
-            "relationUserGraphics",  # Campo de relación con el usuario propietario del gráfico
+            "relationTemplateGraphics",
         ]
-        # Define los campos que se serializarán/deserializarán y se incluirán en la representación del objeto
         read_only_fields = ['id']
-        # Define los campos que serán de solo lectura en la deserialización (es decir, no se permitirá actualizarlos mediante la API)
 
     def create(self, validated_data):
-        # Obtenemos el usuario autenticado de la solicitud
-        user = self.context["request"].user
-        # Establecemos el valor de relationUserDevice en el usuario autenticado
-        validated_data["relationUserGraphics"] = user
-        # Creamos el objeto relationUserDevice usando los datos validados actualizados
-        graphicsx = graphics.objects.create(**validated_data)
+        template_id = self.context['request'].parser_context['kwargs']['id']
+        template = Template.objects.get(id=template_id)
+        validated_data.pop('relationTemplateGraphics')  # Eliminar la clave 'relationTemplateGraphics'
+        graphicsx = graphics.objects.create(relationTemplateGraphics=template, **validated_data)
         return graphicsx
-    
+
+
