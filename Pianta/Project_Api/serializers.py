@@ -127,6 +127,7 @@ class GraphicsSerializer(serializers.ModelSerializer):
             "aliasgraphics",
             "location",
             "is_circular",
+            "color",
             "relationTemplateGraphics",
         ]
         read_only_fields = ['id']
