@@ -15,8 +15,11 @@ from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
+from django.shortcuts import get_object_or_404
 from rest_framework import generics
 from django.urls import reverse
+import json
+import pytz
 from Project_Api.serializers import  DevicesSerializer, ProjectSerializer, TemplateSerializer, ShareProjectSerializer, DatosSensoresSerializer, SharedRelationSerializer, GraphicsSerializer#, SharedProjectValidationSerializer
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status
@@ -503,37 +506,62 @@ class TemplateDetailApiView(APIView):
 
 
 # Create your views here.
-@csrf_exempt
-def save_DatosSensores(request):
-    if request.method == 'POST':
-        # Obtener los datos de la solicitud POST en formato JSON
-        data = request.body.decode('utf-8')
-        # Convertir los datos de JSON a un diccionario de Python
-        data_dict = json.loads(data)
+class save_DatosSensores(APIView):
+    #permission_classes = (IsAuthenticated, ) 
+    queryset = DatosSensores.objects.all()
+    serializer_class = DatosSensoresSerializer
+
+    def get_queryset(self, **kwargs):
+        template_id = self.kwargs['id']
+        print(template_id)
+        return DatosSensores.objects.filter(relationTemplatePin_id=template_id)
+
+    def perform_create(self, serializer, **kwargs):
+        template_id = self.kwargs['id']
+        try:
+            template = Template.objects.get(id=template_id)
+        except ObjectDoesNotExist:
+            # Manejar el caso cuando no se encuentra ninguna instancia de Template
+            raise ValidationError("Template with the provided ID does not exist.")
+        serializer.save(relationTemplateGraphics=template)
+
+    def get(self, request, *args, **kwargs):
+        template_id = self.kwargs['id']
+        try:
+            template = Template.objects.get(id=template_id)
+        except ObjectDoesNotExist:
+            # Manejar el caso cuando no se encuentra ninguna instancia de Template
+            return Response("Template with the provided ID does not exist.", status=status.HTTP_404_NOT_FOUND)
+        datossensores_queryset = self.get_queryset().filter(relationTemplatePin_id=template_id)
+        serializer = DatosSensoresSerializer(datossensores_queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, *args, **kwargs):
+        template_id = self.kwargs['id']
+        template = get_object_or_404(Template, id=template_id)
+        # Obtener los datos del cuerpo de la solicitud
+        data = request.data
         # Obtener los valores de los sensores del diccionario
-        namePerson = data_dict.get('name', '')
-        sensor1_value = data_dict.get('v1', 0)
-        sensor2_value = data_dict.get('v2', 0)
-        sensor3_value = data_dict.get('v3', 0)
-        sensor4_value = data_dict.get('v4', 0)
-        sensor5_value = data_dict.get('v5', 0)
-        sensor6_value = data_dict.get('v6', 0)
-        sensor7_value = data_dict.get('v7', 0)
-        sensor8_value = data_dict.get('v8', 0)
-        sensor9_value = data_dict.get('v9', 0)
-        sensor10_value = data_dict.get('v10', 0)
-        sensor11_value = data_dict.get('v11', 0)
-        sensor12_value = data_dict.get('v12', 0)
+        namePerson = data.get('name', '')
+        sensor1_value = data.get('v1', 0)
+        sensor2_value = data.get('v2', 0)
+        sensor3_value = data.get('v3', 0)
+        sensor4_value = data.get('v4', 0)
+        sensor5_value = data.get('v5', 0)
+        sensor6_value = data.get('v6', 0)
+        sensor7_value = data.get('v7', 0)
+        sensor8_value = data.get('v8', 0)
+        sensor9_value = data.get('v9', 0)
+        sensor10_value = data.get('v10', 0)
+        sensor11_value = data.get('v11', 0)
+        sensor12_value = data.get('v12', 0)
         # Guardar los valores de los sensores en la base de datos
-        datos_sensores = DatosSensores(v1=sensor1_value, v2=sensor2_value,v3=sensor3_value,v4=sensor4_value,v5=sensor5_value,v6=sensor6_value,v7=sensor7_value,v8=sensor8_value,v9=sensor9_value,v10=sensor10_value,v11=sensor11_value,v12=sensor12_value,name=namePerson )
+        datos_sensores = DatosSensores(v1=sensor1_value, v2=sensor2_value, v3=sensor3_value, v4=sensor4_value, v5=sensor5_value, v6=sensor6_value, v7=sensor7_value, v8=sensor8_value, v9=sensor9_value, v10=sensor10_value, v11=sensor11_value, v12=sensor12_value, name=namePerson, relationTemplatePin=template)
         datos_sensores.save()
-        # Devolver una respuesta exitosa
-        response_data = {'status': 'success'}
-        return JsonResponse(response_data)
-    
-    # Devolver una respuesta de error si la solicitud no es POST
-    response_data = {'status': 'error', 'message': 'Metodo no permitido'}
-    return JsonResponse(response_data, status=405)
+        # Crear un serializador con los datos guardados
+        serializer = DatosSensoresSerializer(datos_sensores)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
 
 @api_view(['GET'])
 def obtener_datos_sensores(request):

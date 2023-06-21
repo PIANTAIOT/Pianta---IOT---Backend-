@@ -1,5 +1,4 @@
-# Actualizado por:
-# Yeimmy Katherin Lugo 
+
 # 07/06/2023
 
 import uuid
@@ -7,6 +6,10 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
 from ApiPianta.models import User
+import pytz
+from datetime import datetime
+from datetime import timedelta
+
 
 # Create your models here.
 
@@ -64,6 +67,9 @@ class DatosSensores(models.Model):
     v11 = models.FloatField()  # Define un campo FloatField llamado 'v11'
     v12 = models.FloatField()  # Define un campo FloatField llamado 'v12'
     created_at = models.DateTimeField()  # Define un campo DateTimeField llamado 'created_at'
+    relationTemplatePin = models.ForeignKey(Template, on_delete=models.CASCADE, related_name='pin', default=None)  # Define una relación ForeignKey con el modelo User, establece el comportamiento de eliminación en cascada y establece el atributo relacionado como 'pin'
+
+
 
     def _str_(self):
         return f"{self.name} - {self.valor}"

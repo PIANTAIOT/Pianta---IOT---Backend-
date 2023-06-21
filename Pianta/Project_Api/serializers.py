@@ -106,14 +106,19 @@ class TemplateSerializer(serializers.ModelSerializer):
     
         
 class DatosSensoresSerializer(serializers.ModelSerializer):
+    relationTemplatePin = serializers.PrimaryKeyRelatedField(read_only=True)
+
     class Meta:
         model = DatosSensores
-        # Asocia el serializador al modelo "DatosSensores"
-        fields = ['name', 'created_at', 'v1', 'v2', 'v3', 'v4', 'v5', 'v6', 'v7', 'v8', 'v9', 'v10', 'v11', 'v12']
-        # Define los campos que se serializarán/deserializarán y se incluirán en la representación del objeto
-        read_only_fields = ['name', 'created_at', 'v1', 'v2', 'v3', 'v4', 'v5', 'v6', 'v7', 'v8', 'v9', 'v10', 'v11', 'v12']
-        # Define los campos que serán de solo lectura en la deserialización (es decir, no se permitirá actualizarlos mediante la API)
-
+        fields = ['name', 'created_at', 'v1', 'v2', 'v3', 'v4', 'v5', 'v6', 'v7', 'v8', 'v9', 'v10', 'v11', 'v12', 'relationTemplatePin']
+        read_only_fields = ['name', 'created_at', 'v1', 'v2', 'v3', 'v4', 'v5', 'v6', 'v7', 'v8', 'v9', 'v10', 'v11', 'v12', 'relationTemplatePin']
+        
+    def create(self, validated_data):
+        template_id = self.context['request'].parser_context['kwargs']['id']
+        template = Template.objects.get(id=template_id)
+        validated_data.pop('relationTemplatePin')  # Eliminar la clave 'relationTemplateGraphics'
+        sensores = DatosSensores.objects.create(relationTemplatePin=template, **validated_data)
+        return sensores
 
 class GraphicsSerializer(serializers.ModelSerializer):
     relationTemplateGraphics = serializers.PrimaryKeyRelatedField(queryset=Template.objects.all(), default=serializers.CurrentUserDefault())
