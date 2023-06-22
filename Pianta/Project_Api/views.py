@@ -324,6 +324,7 @@ class DevicesListApiView(generics.ListCreateAPIView):
         data = {
             'name': request.data.get('name'),
             'location': request.data.get('location'),
+            'template': request.data.get('template'),
             'relationProject': project_id,
         }
         serializer = DevicesSerializer(data=data, context={'request': request})
@@ -359,6 +360,7 @@ class DevicesDetailApiView(APIView):
         data = {
             'name': request.data.get('name'),
             'location': request.data.get('location'),
+            'template': request.data.get('template'),
             'relationProject': project_id,
         }
         serializer = DevicesSerializer(instance=device_instance, data=data, partial=True)

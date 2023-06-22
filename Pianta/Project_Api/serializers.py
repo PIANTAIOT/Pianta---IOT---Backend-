@@ -61,7 +61,8 @@ class DevicesSerializer(serializers.ModelSerializer):
         fields = [
             "id",  # Campo de identificación del dispositivo
             "name",  # Campo de nombre del dispositivo
-            "location",  # Campo de ubicación del dispositivo
+            "location",# Campo de ubicación del dispositivo
+            "template",
             "relationProject",  # Campo de relación con el usuario propietario del dispositivo
         ]
         read_only_fields = ['id']
