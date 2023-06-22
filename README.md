@@ -46,6 +46,10 @@ f. API de Validación de Token:
    - Proporciona una respuesta indicando si el token se ha verificado con éxito.
 
 Estas API proporcionan funcionalidades esenciales relacionadas con la gestión de usuarios, autenticación, registro y seguridad en la plataforma.
+Esta es la vista desde el framework de Django.
+![image](https://github.com/PIANTAIOT/Pianta---IOT---Backend-/assets/126418421/e4c789e8-d137-4172-a83d-24bf72b519ad)
+
+
 
 2. API de sensores: Esta API permite el registro y gestión de sensores IoT. Los endpoints permiten crear, leer, actualizar y eliminar información sobre los sensores, incluyendo su ubicación, tipo de sensor y datos asociados.
 
@@ -56,6 +60,8 @@ Cuando se realiza una solicitud POST a la API con datos de sensores en formato J
 Además de la capacidad de guardar datos de sensores, la API también permite obtener información sobre los datos almacenados. Por ejemplo, se puede realizar una solicitud GET para obtener todos los datos de los sensores almacenados en la base de datos. También es posible obtener información específica de un campo en particular, como el nombre de la persona asociada o la fecha y hora de creación de los datos.
 
 En resumen, la API de sensores proporciona una interfaz para guardar y obtener datos de sensores, lo que permite a los usuarios almacenar y consultar información relacionada con los sensores en una base de datos.
+Vista desde el framework de Django.
+![image](https://github.com/PIANTAIOT/Pianta---IOT---Backend-/assets/126418421/5bfeb992-3cee-4982-a96f-3c335c4913a5)
 
 
 3. API de project:
@@ -81,6 +87,9 @@ Estas vistas de la API permiten compartir proyectos existentes y obtener detalle
 Para obtener detalles de un proyecto compartido, se proporciona un identificador único y se realiza una búsqueda en la base de datos. Si se encuentra el proyecto, se devuelve la información detallada del mismo.
 
 En resumen, estas vistas de la API brindan funcionalidades relacionadas con la compartición y recuperación de proyectos compartidos, aplicando validaciones y utilizando serializadores para manipular los datos de manera adecuada.
+Vista desde el framework de Django.
+![image](https://github.com/PIANTAIOT/Pianta---IOT---Backend-/assets/126418421/954025c8-2790-415f-b890-9f73ee038687)
+
 
 
 5. API de devices:
@@ -100,6 +109,9 @@ Para actualizar los datos de un dispositivo existente, se realiza una solicitud 
 Para eliminar un dispositivo existente, se realiza una solicitud DELETE con el identificador del dispositivo y el identificador del proyecto asociado.
 
 Estas operaciones aseguran que se realicen dentro del contexto adecuado, es decir, en relación con el proyecto especificado.
+Vista desde el framework de Django.
+![image](https://github.com/PIANTAIOT/Pianta---IOT---Backend-/assets/126418421/78453901-e0ab-4284-9e25-86d9fb87dadf)
+
 
 6. API de Template:
 Esta API permite realizar operaciones relacionadas con plantillas (templates) en el sistema.
@@ -119,6 +131,9 @@ Para actualizar los datos de una plantilla existente, se realiza una solicitud P
 Para eliminar una plantilla existente, se realiza una solicitud DELETE con el identificador de la plantilla.
 
 Todas las operaciones se realizan dentro del contexto del usuario autenticado para garantizar la seguridad y la asociación correcta de los datos con el usuario correspondiente.
+
+Vista desde el framework de Django.
+![image](https://github.com/PIANTAIOT/Pianta---IOT---Backend-/assets/126418421/dfd52890-698c-41b0-bd49-41473ffb0bd2)
 
 
 
