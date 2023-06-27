@@ -134,6 +134,7 @@ class GraphicsSerializer(serializers.ModelSerializer):
             "location",
             "is_circular",
             "color",
+            "ports",
             "relationTemplateGraphics",
         ]
         read_only_fields = ['id']

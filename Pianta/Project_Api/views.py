@@ -576,16 +576,32 @@ def obtener_datos_sensores(request):
     # Devuelve los datos serializados en una respuesta
     return Response(serializer.data)
 
-@api_view(['GET'])
-def datos_sensores(request, field):
-    # Obtiene los datos de los sensores solo para el campo específico proporcionado
-    datos_sensores = DatosSensores.objects.values('name', 'created_at', field)
+class datos_sensores(APIView):
+    queryset = DatosSensores.objects.all()
+    serializer_class = DatosSensoresSerializer
+    def get(self, request, field, *args, **kwargs):
+        template_id = self.kwargs['id']
+        try:
+            template = Template.objects.get(id=template_id)
+        except ObjectDoesNotExist:
+            # Manejar el caso cuando no se encuentra ninguna instancia de Template
+            return Response("Template with the provided ID does not exist.", status=status.HTTP_404_NOT_FOUND)
+        datos_sensores = DatosSensores.objects.filter(relationTemplatePin=template).values('name', 'created_at', field)
+        serializer = DatosSensoresSerializer(datos_sensores, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
     
-    # Serializa los datos de los sensores
-    serializer = DatosSensoresSerializer(datos_sensores, many=True)
     
-    # Devuelve los datos serializados en una respuesta
-    return Response(serializer.data)
+# @api_view(['GET'])
+# def datos_sensores(request, field):
+#     #template_id = self.kwargs['id']
+#     # Obtiene los datos de los sensores solo para el campo específico proporcionado
+#     datos_sensores = DatosSensores.objects.values('name', 'created_at', field)
+    
+#     # Serializa los datos de los sensores
+#     serializer = DatosSensoresSerializer(datos_sensores, many=True)
+    
+#     # Devuelve los datos serializados en una respuesta
+#     return Response(serializer.data)
 
 #Graphics
 class GraphicsApiView(APIView):
@@ -628,6 +644,7 @@ class GraphicsApiView(APIView):
             'location': request.data.get('location'),
             'color': request.data.get('color'),
             'is_circular': request.data.get('is_circular', False),
+            'ports': request.data.get('ports'),
             'relationTemplateGraphics_id': template_id,  # Agregar el ID de la plantilla al diccionario de datos
         }
         # Crear un serializador con los datos de la solicitud y el contexto de la solicitud
@@ -679,6 +696,7 @@ class GraphicsApiDetailView(APIView):
             'titlegraphics': request.data.get('titlegraphics', graphics_instance.titlegraphics),
             'namegraphics': request.data.get('namegraphics', graphics_instance.namegraphics),
             'aliasgraphics': request.data.get('aliasgraphics', graphics_instance.aliasgraphics),
+            'ports': request.data.get('ports', graphics_instance.ports),
             'color': request.data.get('color', graphics_instance.color),
         }
         

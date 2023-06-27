@@ -97,6 +97,7 @@ class graphics(models.Model):
     location = models.CharField(max_length=1000, blank=False, default=False)  # Define un campo CharField llamado 'location' con una longitud máxima de 100 caracteres y no permite valores en blanco ni nulos
     color = models.CharField(max_length=1000, blank=False, default=False)
     is_circular = models.BooleanField(default=False)
+    ports = models.CharField(max_length=1000, blank=False, default=False)
     relationTemplateGraphics = models.ForeignKey(Template, on_delete=models.CASCADE, related_name='graphics', default=None)  # Define una relación ForeignKey con el modelo User, establece el comportamiento de eliminación en cascada y establece el atributo relacionado como 'graphics'
 
 

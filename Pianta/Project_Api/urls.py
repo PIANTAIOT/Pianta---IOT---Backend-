@@ -17,5 +17,5 @@ urlpatterns = [
     path('template/<int:template_id>/', TemplateDetailApiView.as_view(), name="Template_detail"),
     path('api/DatosSensores/<int:id>/',save_DatosSensores.as_view(), name='save_DatosSensores'),
     path('datos-sensores/', obtener_datos_sensores, name='obtener_datos_sensores'),
-    path('datos-sensores/<str:field>/', datos_sensores, name='obtener_datos_sensores'),
+    path('datos-sensores/<str:field>/<int:id>/', datos_sensores.as_view(), name='obtener_datos_sensores'),
 ]   
