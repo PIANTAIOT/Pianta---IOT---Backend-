@@ -71,7 +71,6 @@ class DatosSensores(models.Model):
     relationTemplatePin = models.ForeignKey(Template, on_delete=models.CASCADE, related_name='pin', default=None)  # Define una relación ForeignKey con el modelo User, establece el comportamiento de eliminación en cascada y establece el atributo relacionado como 'pin'
 
 
-
     def _str_(self):
         return f"{self.name} - {self.valor}"
     def save(self, *args, **kwargs):
@@ -98,6 +97,8 @@ class graphics(models.Model):
     color = models.CharField(max_length=1000, blank=False, default=False)
     is_circular = models.BooleanField(default=False)
     ports = models.CharField(max_length=1000, blank=False, default=False)
+    size_increase = models.IntegerField(blank=True, null=True)
+    size_decrease = models.IntegerField(blank=True, null=True)
     relationTemplateGraphics = models.ForeignKey(Template, on_delete=models.CASCADE, related_name='graphics', default=None)  # Define una relación ForeignKey con el modelo User, establece el comportamiento de eliminación en cascada y establece el atributo relacionado como 'graphics'
 
 

@@ -377,6 +377,8 @@ class DevicesDetailApiView(APIView):
         return Response({"res": "Object deleted!"}, status=status.HTTP_200_OK)
    
 
+
+
 class TemplateListApiView(APIView):
     permission_classes = (IsAuthenticated, )  # Clases de permisos requeridas para acceder a la vista
     queryset = Template.objects.all()  # Conjunto de consultas para obtener todas las instancias de Template
@@ -505,6 +507,18 @@ class TemplateDetailApiView(APIView):
             {"res": "Object deleted!"},
             status=status.HTTP_200_OK
         )
+class TemplateGetShared(APIView):
+    # Lista todos los registros
+    def get(self, request, *args, **kwargs):
+        '''
+        List all the project items for given requested user
+        '''
+        templates = Template.objects.all()
+        serializer = TemplateSerializer(templates, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+        # Move the following line inside the get method
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 # Create your views here.
@@ -589,7 +603,6 @@ class datos_sensores(APIView):
         datos_sensores = DatosSensores.objects.filter(relationTemplatePin=template).values('name', 'created_at', field)
         serializer = DatosSensoresSerializer(datos_sensores, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-    
     
 # @api_view(['GET'])
 # def datos_sensores(request, field):
@@ -733,5 +746,27 @@ class GraphicsApiDetailView(APIView):
         # Devolver una respuesta indicando que el objeto ha sido eliminado con éxito
         return Response(
             {"res": "Object deleted!"},
+            status=status.HTTP_200_OK
+        )
+  # Actualiza el elemento Graphics con graphics_id dado, si existe
+    def patch(self, request, graphics_id, *args, **kwargs):
+        # Obtener la instancia de gráficos correspondiente al ID proporcionado
+        graphics_instance = self.get_object(graphics_id)
+        if not graphics_instance:
+            # Si no se encuentra una instancia de gráficos, devolver un error 400
+            return Response(
+                {"res": "Object with graphics id does not exist"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        # Obtener el nuevo valor de 'size_increase' del cuerpo de la solicitud PATCH
+        new_size_increase = request.data.get('size_increase')
+
+        # Actualizar el valor de 'size_increase' en la instancia de gráficos
+        graphics_instance.size_increase = new_size_increase
+        graphics_instance.save()
+        
+        # Devolver una respuesta exitosa
+        return Response(
+            {"res": "Size increased successfully"},
             status=status.HTTP_200_OK
         )
