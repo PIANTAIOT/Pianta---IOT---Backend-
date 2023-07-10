@@ -95,7 +95,6 @@ class TemplateSerializer(serializers.ModelSerializer):
         read_only_fields = ['id']
         # Define los campos que serán de solo lectura en la deserialización (es decir, no se permitirá actualizarlos mediante la API)
 
-        
     def create(self, validated_data):
         # Obtenemos el usuario autenticado de la solicitud
         user = self.context["request"].user
@@ -104,6 +103,26 @@ class TemplateSerializer(serializers.ModelSerializer):
         # Creamos el objeto relationUserDevice usando los datos validados actualizados
         template = Template.objects.create(**validated_data)
         return template
+    
+class TemplateSerializerShared(serializers.ModelSerializer):
+    relationUserTemplate = serializers.ReadOnlyField(source='relationUserTemplate.username')
+    # Define un campo de solo lectura "relationUserTemplate" que obtiene el nombre de usuario del campo "relationUserTemplate" del objeto relacionado
+    class Meta:
+        model = Template
+        # Asocia el serializador al modelo "Template"
+        fields = [
+            "id",  # Campo de identificación de la plantilla
+            "name",  # Campo de nombre de la plantilla
+            "sensor",  # Campo de sensor asociado a la plantilla
+            "red",  # Campo de red asociada a la plantilla
+            "descripcion",  # Campo de descripción de la plantilla
+            "relationUserTemplate",  # Campo de relación con el usuario propietario de la plantilla
+        ]
+        read_only_fields = ['id']
+        # Define los campos que serán de solo lectura en la deserialización (es decir, no se permitirá actualizarlos mediante la API)
+
+
+    
     
         
 class DatosSensoresSerializer(serializers.ModelSerializer):
@@ -134,6 +153,9 @@ class GraphicsSerializer(serializers.ModelSerializer):
             "location",
             "is_circular",
             "color",
+            "ports",
+            "size_increase",   
+            "size_decrease",
             "relationTemplateGraphics",
         ]
         read_only_fields = ['id']

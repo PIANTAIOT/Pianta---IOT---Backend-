@@ -187,7 +187,6 @@ class CustomPasswordResetConfirmView(PasswordResetConfirmView):
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()
         # Se obtiene la instancia del objeto actual basado en los parámetros de la solicitud.
-
         # Se define un contexto que contiene los valores del uid, uidb64, token y csrf_token.
         context = {
             'uid': self.kwargs['uidb64'],

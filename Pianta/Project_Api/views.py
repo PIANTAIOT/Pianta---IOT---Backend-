@@ -377,6 +377,8 @@ class DevicesDetailApiView(APIView):
         return Response({"res": "Object deleted!"}, status=status.HTTP_200_OK)
    
 
+
+
 class TemplateListApiView(APIView):
     permission_classes = (IsAuthenticated, )  # Clases de permisos requeridas para acceder a la vista
     queryset = Template.objects.all()  # Conjunto de consultas para obtener todas las instancias de Template
@@ -505,6 +507,19 @@ class TemplateDetailApiView(APIView):
             {"res": "Object deleted!"},
             status=status.HTTP_200_OK
         )
+        
+class TemplateGetShared(APIView):
+    # Lista todos los registros
+    def get(self, request, *args, **kwargs):
+        '''
+        List all the project items for given requested user
+        '''
+        templates = Template.objects.all()
+        serializer = TemplateSerializer(templates, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+        # Move the following line inside the get method
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 # Create your views here.
@@ -576,16 +591,31 @@ def obtener_datos_sensores(request):
     # Devuelve los datos serializados en una respuesta
     return Response(serializer.data)
 
-@api_view(['GET'])
-def datos_sensores(request, field):
-    # Obtiene los datos de los sensores solo para el campo específico proporcionado
-    datos_sensores = DatosSensores.objects.values('name', 'created_at', field)
+class datos_sensores(APIView):
+    queryset = DatosSensores.objects.all()
+    serializer_class = DatosSensoresSerializer
+    def get(self, request, field, *args, **kwargs):
+        template_id = self.kwargs['id']
+        try:
+            template = Template.objects.get(id=template_id)
+        except ObjectDoesNotExist:
+            # Manejar el caso cuando no se encuentra ninguna instancia de Template
+            return Response("Template with the provided ID does not exist.", status=status.HTTP_404_NOT_FOUND)
+        datos_sensores = DatosSensores.objects.filter(relationTemplatePin=template).values('name', 'created_at', field)
+        serializer = DatosSensoresSerializer(datos_sensores, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
     
-    # Serializa los datos de los sensores
-    serializer = DatosSensoresSerializer(datos_sensores, many=True)
+# @api_view(['GET'])
+# def datos_sensores(request, field):
+#     #template_id = self.kwargs['id']
+#     # Obtiene los datos de los sensores solo para el campo específico proporcionado
+#     datos_sensores = DatosSensores.objects.values('name', 'created_at', field)
     
-    # Devuelve los datos serializados en una respuesta
-    return Response(serializer.data)
+#     # Serializa los datos de los sensores
+#     serializer = DatosSensoresSerializer(datos_sensores, many=True)
+    
+#     # Devuelve los datos serializados en una respuesta
+#     return Response(serializer.data)
 
 #Graphics
 class GraphicsApiView(APIView):
@@ -628,6 +658,7 @@ class GraphicsApiView(APIView):
             'location': request.data.get('location'),
             'color': request.data.get('color'),
             'is_circular': request.data.get('is_circular', False),
+            'ports': request.data.get('ports'),
             'relationTemplateGraphics_id': template_id,  # Agregar el ID de la plantilla al diccionario de datos
         }
         # Crear un serializador con los datos de la solicitud y el contexto de la solicitud
@@ -679,6 +710,7 @@ class GraphicsApiDetailView(APIView):
             'titlegraphics': request.data.get('titlegraphics', graphics_instance.titlegraphics),
             'namegraphics': request.data.get('namegraphics', graphics_instance.namegraphics),
             'aliasgraphics': request.data.get('aliasgraphics', graphics_instance.aliasgraphics),
+            'ports': request.data.get('ports', graphics_instance.ports),
             'color': request.data.get('color', graphics_instance.color),
         }
         
@@ -715,5 +747,27 @@ class GraphicsApiDetailView(APIView):
         # Devolver una respuesta indicando que el objeto ha sido eliminado con éxito
         return Response(
             {"res": "Object deleted!"},
+            status=status.HTTP_200_OK
+        )
+  # Actualiza el elemento Graphics con graphics_id dado, si existe
+    def patch(self, request, graphics_id, *args, **kwargs):
+        # Obtener la instancia de gráficos correspondiente al ID proporcionado
+        graphics_instance = self.get_object(graphics_id)
+        if not graphics_instance:
+            # Si no se encuentra una instancia de gráficos, devolver un error 400
+            return Response(
+                {"res": "Object with graphics id does not exist"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        # Obtener el nuevo valor de 'size_increase' del cuerpo de la solicitud PATCH
+        new_size_increase = request.data.get('size_increase')
+
+        # Actualizar el valor de 'size_increase' en la instancia de gráficos
+        graphics_instance.size_increase = new_size_increase
+        graphics_instance.save()
+        
+        # Devolver una respuesta exitosa
+        return Response(
+            {"res": "Size increased successfully"},
             status=status.HTTP_200_OK
         )
