@@ -507,6 +507,7 @@ class TemplateDetailApiView(APIView):
             {"res": "Object deleted!"},
             status=status.HTTP_200_OK
         )
+        
 class TemplateGetShared(APIView):
     # Lista todos los registros
     def get(self, request, *args, **kwargs):
