@@ -265,6 +265,8 @@ class ProjectDetailApiView(APIView):
         serializer = ProjectSerializer(project_instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
     #Actualiza el elemento Project con project_id dado, si existe
+   
+   
     def put(self, request, project_id, *args, **kwargs):
         project_instance = self.get_object(project_id)
         if not project_instance:
@@ -273,10 +275,10 @@ class ProjectDetailApiView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
         data ={
-            'idrandom': request.data.get('idrandom'), # Obtiene el valor de 'idrandom' del objeto 'request.data'
-            'name' : request.data.get('name'), # Obtiene el valor de 'name' del objeto 'request.data'
-            'location': request.data.get('location'), # Obtiene el valor de 'location' del objeto 'request.data'
-            'description' : request.data.get('description'), # Obtiene el valor de 'description' del objeto 'request.data'
+            #'idrandom': request.data.get('idrandom'), # Obtiene el valor de 'idrandom' del objeto 'request.data'
+            'name' : request.data.get('name', project_instance.name), # Obtiene el valor de 'name' del objeto 'request.data'
+            #'location': request.data.get('location'), # Obtiene el valor de 'location' del objeto 'request.data'
+            'description' : request.data.get('description', project_instance.description), # Obtiene el valor de 'description' del objeto 'request.data'
         }
         # Crea una instancia del serializador 'ProjectSerializer'
         serializer = ProjectSerializer(
